@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  username     String        @unique
+  displayName  String
+  email        String        @unique
+  passwordHash String
+  xpub         String
+  mnemonicEnc  String
+  nextIndex    Int           @default(0)
+  createdAt    DateTime      @default(now())
+  paymentLinks PaymentLink[]
+  developerApps DeveloperApp[]
+}
+
+model PaymentLink {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  linkName        String
+  title           String
+  description     String        @default("")
+  amountBCH       Float?
+  bchAddress      String        @unique
+  derivationIndex Int
+  status          String        @default("pending")
+  createdAt       DateTime      @default(now())
+  transactions    Transaction[]
+
+  @@unique([userId, linkName])
+}
+
+model Transaction {
+  id            String      @id @default(cuid())
+  paymentLinkId String
+  paymentLink   PaymentLink @relation(fields: [paymentLinkId], references: [id])
+  txHash        String      @unique
+  amountBCH     Float
+  confirmations Int         @default(0)
+  detectedAt    DateTime    @default(now())
+}
+
+model DeveloperApp {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  appName    String
+  apiKey     String   @unique
+  webhookUrl String?
+  createdAt  DateTime @default(now())
+}
