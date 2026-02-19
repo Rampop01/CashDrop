@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import type { PaymentLink, Transaction } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({
-    links: links.map((link) => ({
+    links: links.map((link: PaymentLink & { transactions: Transaction[] }) => ({
       id: link.id,
       linkName: link.linkName,
       title: link.title,
@@ -23,8 +24,9 @@ export async function GET(req: NextRequest) {
       amountBCH: link.amountBCH,
       bchAddress: link.bchAddress,
       status: link.status,
+      network: link.network,
       createdAt: link.createdAt,
-      totalReceived: link.transactions.reduce((s, tx) => s + tx.amountBCH, 0),
+      totalReceived: link.transactions.reduce((s: number, tx: Transaction) => s + tx.amountBCH, 0),
       transactionCount: link.transactions.length,
     })),
   });
