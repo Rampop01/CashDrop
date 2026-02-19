@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPaymentStatus } from "@/lib/payment-monitor";
 import { prisma } from "@/lib/prisma";
+import type { Network } from "@/lib/bch-wallet";
 
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
   const amount = req.nextUrl.searchParams.get("amount");
+  const network = (req.nextUrl.searchParams.get("network") ?? "mainnet") as Network;
 
   if (!address) {
     return NextResponse.json({ error: "address is required" }, { status: 400 });
   }
 
   const expectedAmount = amount ? parseFloat(amount) : undefined;
-  const status = await checkPaymentStatus(address, expectedAmount);
+  const status = await checkPaymentStatus(address, expectedAmount, network);
 
   // If paid, update DB
   if (status.paid && status.txHash) {
