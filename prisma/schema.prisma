@@ -16,6 +16,7 @@ model User {
   xpub         String
   mnemonicEnc  String
   nextIndex    Int           @default(0)
+  network      String        @default("mainnet")
   createdAt    DateTime      @default(now())
   paymentLinks PaymentLink[]
   developerApps DeveloperApp[]
@@ -32,6 +33,7 @@ model PaymentLink {
   bchAddress      String        @unique
   derivationIndex Int
   status          String        @default("pending")
+  network         String        @default("mainnet")
   createdAt       DateTime      @default(now())
   transactions    Transaction[]
 

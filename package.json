@@ -12,8 +12,10 @@
   "dependencies": {
     "@bitauth/libauth": "^3.0.0",
     "@prisma/client": "^5.22.0",
+    "@scure/bip32": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "bip39": "^3.1.0",
+    "bitcore-lib-cash": "^10.10.5",
     "framer-motion": "^12.34.2",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
