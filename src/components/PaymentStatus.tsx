@@ -7,6 +7,7 @@ import { HiOutlineClock } from "react-icons/hi2";
 interface PaymentStatusProps {
   address: string;
   amount?: number;
+  network?: "mainnet" | "testnet";
 }
 
 interface StatusData {
@@ -16,14 +17,14 @@ interface StatusData {
   confirmations: number;
 }
 
-export default function PaymentStatus({ address, amount }: PaymentStatusProps) {
+export default function PaymentStatus({ address, amount, network = "mainnet" }: PaymentStatusProps) {
   const [status, setStatus] = useState<StatusData | null>(null);
   const [checking, setChecking] = useState(false);
 
   const checkPayment = useCallback(async () => {
     setChecking(true);
     try {
-      const params = new URLSearchParams({ address });
+      const params = new URLSearchParams({ address, network });
       if (amount) params.set("amount", amount.toString());
       const res = await fetch(`/api/check-payment?${params}`);
       if (res.ok) {
@@ -35,7 +36,7 @@ export default function PaymentStatus({ address, amount }: PaymentStatusProps) {
     } finally {
       setChecking(false);
     }
-  }, [address, amount]);
+  }, [address, amount, network]);
 
   useEffect(() => {
     checkPayment();
