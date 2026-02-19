@@ -54,7 +54,9 @@ export default function PaymentStatus({ address, amount, network = "mainnet" }: 
         </p>
         {status.txHash && (
           <a
-            href={`https://blockchair.com/bitcoin-cash/transaction/${status.txHash}`}
+            href={network === "testnet"
+              ? `https://chipnet.imaginary.cash/tx/${status.txHash}`
+              : `https://blockchair.com/bitcoin-cash/transaction/${status.txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-green-400 hover:underline font-mono break-all"

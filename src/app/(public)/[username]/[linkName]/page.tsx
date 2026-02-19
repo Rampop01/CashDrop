@@ -17,6 +17,7 @@ interface LinkData {
   amountBCH: number | null;
   bchAddress: string;
   status: string;
+  network: "mainnet" | "testnet";
 }
 
 interface UserData {
@@ -173,6 +174,7 @@ export default function PaymentLinkPage() {
             <PaymentStatus
               address={linkData.bchAddress}
               amount={linkData.amountBCH || undefined}
+              network={linkData.network || "mainnet"}
             />
           </div>
         </div>

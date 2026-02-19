@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ username: string; linkName: string }> }
 ) {
   const { username, linkName } = await params;
@@ -32,6 +32,7 @@ export async function GET(
       amountBCH: link.amountBCH,
       bchAddress: link.bchAddress,
       status: link.status,
+      network: link.network,
     },
   });
 }
