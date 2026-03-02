@@ -1,6 +1,6 @@
 import * as bip39 from "bip39";
 import { HDKey } from "@scure/bip32";
-import { createHash } from "crypto";
+import { createHash, createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 export type Network = "mainnet" | "testnet";
 
@@ -104,17 +104,22 @@ export function formatBchUri(address: string, amount?: number | null): string {
 }
 
 export function encryptMnemonic(mnemonic: string, secret: string): string {
-  const key = sha256(Buffer.from(secret));
-  const data = Buffer.from(mnemonic, "utf-8");
-  const enc = Buffer.alloc(data.length);
-  for (let i = 0; i < data.length; i++) enc[i] = data[i] ^ key[i % key.length];
-  return enc.toString("base64");
+  const key = sha256(Buffer.from(secret));        // 32-byte AES-256 key
+  const iv = randomBytes(16);                      // fresh IV every time
+  const cipher = createCipheriv("aes-256-gcm", key, iv);
+  const encrypted = Buffer.concat([cipher.update(mnemonic, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();             // 16-byte GCM auth tag
+  // Format: iv(16) | authTag(16) | ciphertext
+  return Buffer.concat([iv, authTag, encrypted]).toString("base64");
 }
 
 export function decryptMnemonic(encrypted: string, secret: string): string {
   const key = sha256(Buffer.from(secret));
   const data = Buffer.from(encrypted, "base64");
-  const dec = Buffer.alloc(data.length);
-  for (let i = 0; i < data.length; i++) dec[i] = data[i] ^ key[i % key.length];
-  return dec.toString("utf-8");
+  const iv = data.subarray(0, 16);
+  const authTag = data.subarray(16, 32);
+  const ciphertext = data.subarray(32);
+  const decipher = createDecipheriv("aes-256-gcm", key, iv);
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf-8");
 }

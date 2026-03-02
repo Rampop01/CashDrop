@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { deriveAddress } from "@/lib/bch-wallet";
+import { deriveAddress, decryptMnemonic, type Network } from "@/lib/bch-wallet";
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get("x-api-key");
@@ -28,8 +28,11 @@ export async function POST(req: NextRequest) {
     }
 
     const user = devApp.user;
+    const secret = process.env.MNEMONIC_SECRET || "cashdrop-mnemonic-secret";
+    const mnemonic = decryptMnemonic(user.mnemonicEnc, secret);
+    const network = (user.network as Network) || "mainnet";
     const derivationIndex = user.nextIndex;
-    const bchAddress = deriveAddress(user.xpub, derivationIndex);
+    const bchAddress = deriveAddress(mnemonic, derivationIndex, network);
 
     const [link] = await prisma.$transaction([
       prisma.paymentLink.create({
@@ -41,6 +44,7 @@ export async function POST(req: NextRequest) {
           amountBCH: amountBCH || null,
           bchAddress,
           derivationIndex,
+          network,
         },
       }),
       prisma.user.update({
@@ -53,6 +57,7 @@ export async function POST(req: NextRequest) {
       paymentLink: `/${user.username}/${link.linkName}`,
       bchAddress: link.bchAddress,
       linkId: link.id,
+      network: link.network,
     });
   } catch (error) {
     console.error("Dev create-link error:", error);
